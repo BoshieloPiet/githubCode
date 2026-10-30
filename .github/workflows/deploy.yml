@@ -1,30 +1,31 @@
-name: Deploy to GitHub Pages
 
+name: Build HTML Docker Image
+
+# Trigger the pipeline when code is pushed
 on:
   push:
     branches:
       - main
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+  # Also allow manual execution
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  docker-build:
+    name: Build Docker Image
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: '.'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # Step 1: Download source code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Build Docker image
+      - name: Build Docker Image
+        run: |
+          docker build -t simple-html-app:latest .
+
+      # Step 3: Confirm image was built
+      - name: Verify Docker Image
+        run: |
+          docker images
