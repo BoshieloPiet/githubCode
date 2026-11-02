@@ -1,13 +1,11 @@
 
 name: Build HTML Docker Image
 
-# Trigger the pipeline when code is pushed
 on:
   push:
     branches:
       - main
 
-  # Also allow manual execution
   workflow_dispatch:
 
 jobs:
@@ -44,3 +42,8 @@ jobs:
       - name: Push Docker Image
         run: |
           docker push registry.gitlab.com/YOUR_GITLAB_GROUP/YOUR_PROJECT/simple-html-app:latest
+
+      # Step 6: Confirm successful push
+      - name: Confirm Image Push
+        run: |
+          echo "Docker image successfully pushed to GitLab Container Registry"
