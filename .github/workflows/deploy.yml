@@ -1,16 +1,17 @@
-
 name: Build HTML Docker Image
 
+# Trigger the pipeline when code is pushed
 on:
   push:
     branches:
       - main
 
+  # Also allow manual execution
   workflow_dispatch:
 
 jobs:
   docker-build:
-    name: Build and Push Docker Image
+    name: Build Docker Image
     runs-on: ubuntu-latest
 
     steps:
@@ -18,32 +19,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2: Login to GitLab Container Registry
-      - name: Login to GitLab Registry
-        uses: docker/login-action@v3
-        with:
-          registry: registry.gitlab.com
-          username: ${{ secrets.GITLAB_USERNAME }}
-          password: ${{ secrets.GITLAB_TOKEN }}
-
-      # Step 3: Build Docker image
+      # Step 2: Build Docker image
       - name: Build Docker Image
         run: |
-          docker build \
-            -t registry.gitlab.com/YOUR_GITLAB_GROUP/YOUR_PROJECT/simple-html-app:latest \
-            .
+          docker build -t simple-html-app:latest .
 
-      # Step 4: Verify Docker image
+      # Step 3: Confirm image was built
       - name: Verify Docker Image
         run: |
           docker images
-
-      # Step 5: Push Docker image to GitLab
-      - name: Push Docker Image
-        run: |
-          docker push registry.gitlab.com/YOUR_GITLAB_GROUP/YOUR_PROJECT/simple-html-app:latest
-
-      # Step 6: Confirm successful push
-      - name: Confirm Image Push
-        run: |
-          echo "Docker image successfully pushed to GitLab Container Registry"
