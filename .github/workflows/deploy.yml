@@ -1,41 +1,30 @@
+name: Build HTML Docker Image
 
-stages:
-  - build
-  - publish
+# Trigger the pipeline when code is pushed
+on:
+  push:
+    branches:
+      - main
 
-build_docker_image:
-  stage: build
-  image: docker:cli
-  services:
-    - name: docker:dind
-      command: ["--tls=false"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-  script:
-    - echo "Building Docker image..."
-    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
-    - docker save "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" -o image.tar
-  artifacts:
-    paths:
-      - image.tar
-    expire_in: 1 hour
+  # Also allow manual execution
+  workflow_dispatch:
 
-publish_docker_image:
-  stage: publish
-  image: docker:cli
-  services:
-    - name: docker:dind
-      command: ["--tls=false"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-  needs:
-    - job: build_docker_image
-      artifacts: true
-  script:
-    - docker load -i image.tar
-    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
+jobs:
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download source code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Build Docker image
+      - name: Build Docker Image
+        run: |
+          docker build -t simple-html-app:latest .
+
+      # Step 3: Confirm image was built
+      - name: Verify Docker Image
+        run: |
+          docker images
